@@ -53,4 +53,3 @@ class MideaNumber(MideaEntity, NumberEntity):
 
     def set_native_value(self, value):
         self._device.set_attribute(self._entity_key, value)
-

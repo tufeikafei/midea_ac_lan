@@ -1,5 +1,5 @@
 import logging
-from homeassistant.components.fan import *
+from homeassistant.components.fan import FanEntity, FanEntityFeature
 from homeassistant.const import (
     CONF_DEVICE_ID,
     CONF_SWITCHES,
@@ -115,21 +115,21 @@ class MideaFan(MideaEntity, FanEntity):
 class MideaFAFan(MideaFan):
     def __init__(self, device, entity_key):
         super().__init__(device, entity_key)
-        self._attr_supported_features = SUPPORT_SET_SPEED | SUPPORT_OSCILLATE | SUPPORT_PRESET_MODE
+        self._attr_supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.OSCILLATE | FanEntityFeature.PRESET_MODE
         self._attr_speed_count = self._device.speed_count
 
 
 class MideaB6Fan(MideaFan):
     def __init__(self, device, entity_key):
         super().__init__(device, entity_key)
-        self._attr_supported_features = SUPPORT_SET_SPEED | SUPPORT_PRESET_MODE
+        self._attr_supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
         self._attr_speed_count = self._device.speed_count
 
 
 class MideaACFreshAirFan(MideaFan):
     def __init__(self, device, entity_key):
         super().__init__(device, entity_key)
-        self._attr_supported_features = SUPPORT_SET_SPEED | SUPPORT_PRESET_MODE
+        self._attr_supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
         self._attr_speed_count = 100
 
     @property
@@ -173,7 +173,7 @@ class MideaACFreshAirFan(MideaFan):
 class MideaCEFan(MideaFan):
     def __init__(self, device, entity_key):
         super().__init__(device, entity_key)
-        self._attr_supported_features = SUPPORT_SET_SPEED | SUPPORT_PRESET_MODE
+        self._attr_supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
         self._attr_speed_count = self._device.speed_count
 
     def turn_on(self, percentage, preset_mode, **kwargs):

@@ -1,7 +1,7 @@
 from homeassistant.components.climate import *
 from homeassistant.components.climate.const import *
 from homeassistant.const import (
-    TEMP_CELSIUS,
+    UnitOfTemperature,
     PRECISION_WHOLE,
     PRECISION_HALVES,
     ATTR_TEMPERATURE,
@@ -21,6 +21,14 @@ from .midea.devices.fb.device import DeviceAttributes as FBAttributes
 from .midea_devices import MIDEA_DEVICES
 from .midea_entity import MideaEntity
 
+
+FAN_SPEED_1 = "Level 1"
+FAN_SPEED_2 = "Level 2"
+FAN_SPEED_3 = "Level 3"
+FAN_SPEED_4 = "Level 4"
+FAN_SPEED_5 = "Level 5"
+FAN_SPEED_6 = "Level 6"
+FAN_SPEED_7 = "Level 7"
 
 TEMPERATURE_MAX = 30
 TEMPERATURE_MIN = 17
@@ -66,8 +74,7 @@ class MideaClimate(MideaEntity, ClimateEntity):
         return ClimateEntityFeature.TARGET_TEMPERATURE | \
                ClimateEntityFeature.FAN_MODE | \
                ClimateEntityFeature.PRESET_MODE | \
-               ClimateEntityFeature.SWING_MODE | \
-               ClimateEntityFeature.AUX_HEAT
+               ClimateEntityFeature.SWING_MODE
 
     @property
     def min_temp(self):
@@ -79,7 +86,7 @@ class MideaClimate(MideaEntity, ClimateEntity):
 
     @property
     def temperature_unit(self):
-        return TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     @property
     def target_temperature_low(self):
@@ -116,9 +123,7 @@ class MideaClimate(MideaEntity, ClimateEntity):
     def current_temperature(self):
         return self._device.get_attribute("indoor_temperature")
 
-    @property
-    def is_aux_heat(self):
-        return self._device.get_attribute("aux_heat")
+
 
     @property
     def preset_modes(self):
@@ -134,8 +139,6 @@ class MideaClimate(MideaEntity, ClimateEntity):
             mode = PRESET_BOOST
         elif self._device.get_attribute("sleep_mode"):
             mode = PRESET_SLEEP
-        elif self._device.get_attribute("frost_protect"):
-            mode = PRESET_AWAY
         else:
             mode = PRESET_NONE
         return mode
@@ -175,9 +178,7 @@ class MideaClimate(MideaEntity, ClimateEntity):
     def set_preset_mode(self, preset_mode: str) -> None:
         old_mode = self.preset_mode
         preset_mode = preset_mode.lower()
-        if preset_mode == PRESET_AWAY:
-            self._device.set_attribute(attr="frost_protect", value=True)
-        elif preset_mode == PRESET_COMFORT:
+        if preset_mode == PRESET_COMFORT:
             self._device.set_attribute(attr="comfort_mode", value=True)
         elif preset_mode == PRESET_SLEEP:
             self._device.set_attribute(attr="sleep_mode", value=True)
@@ -185,8 +186,6 @@ class MideaClimate(MideaEntity, ClimateEntity):
             self._device.set_attribute(attr="eco_mode", value=True)
         elif preset_mode == PRESET_BOOST:
             self._device.set_attribute(attr="boost_mode", value=True)
-        elif old_mode == PRESET_AWAY:
-            self._device.set_attribute(attr="frost_protect", value=False)
         elif old_mode == PRESET_COMFORT:
             self._device.set_attribute(attr="comfort_mode", value=False)
         elif old_mode == PRESET_SLEEP:
@@ -196,18 +195,11 @@ class MideaClimate(MideaEntity, ClimateEntity):
         elif old_mode == PRESET_BOOST:
             self._device.set_attribute(attr="boost_mode", value=False)
 
-
     def update_state(self, status):
         try:
             self.schedule_update_ha_state()
         except Exception:
             pass
-
-    def turn_aux_heat_on(self) -> None:
-        self._device.set_attribute(attr="aux_heat", value=True)
-
-    def turn_aux_heat_off(self) -> None:
-        self._device.set_attribute(attr="aux_heat", value=False)
 
 
 class MideaACClimate(MideaClimate):
@@ -228,7 +220,7 @@ class MideaACClimate(MideaClimate):
             SWING_HORIZONTAL.capitalize(),
             SWING_BOTH.capitalize()
         ]
-        self._preset_modes = [PRESET_NONE, PRESET_COMFORT, PRESET_ECO, PRESET_BOOST, PRESET_AWAY]
+        self._preset_modes = [PRESET_NONE, PRESET_COMFORT, PRESET_ECO, PRESET_BOOST]
 
     @property
     def fan_modes(self):
@@ -279,7 +271,7 @@ class MideaACClimate(MideaClimate):
 class MideaCCClimate(MideaClimate):
     def __init__(self, device, entity_key):
         super().__init__(device, entity_key)
-        self._modes = [HVACMode.OFF, HVACMode.FAN_ONLY, HVACMode.DRY, HHVACMode.HEAT, HVACMode.COOL, HVACMode.AUTO]
+        self._modes = [HVACMode.OFF, HVACMode.FAN_ONLY, HVACMode.DRY, HVACMode.HEAT, HVACMode.COOL, HVACMode.AUTO]
         self._swing_modes = [
             SWING_OFF.capitalize(),
             SWING_ON.capitalize()
@@ -319,7 +311,7 @@ class MideaCFClimate(MideaClimate):
 
     @property
     def supported_features(self):
-        return ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.AUX_HEAT
+        return ClimateEntityFeature.TARGET_TEMPERATURE
 
     @property
     def target_temperature_step(self):
